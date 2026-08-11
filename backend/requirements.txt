@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+motor
+langgraph
+langchain-core
+langchain-huggingface
+chromadb
+python-multipart
+aiofiles
+pypdf
+python-docx
