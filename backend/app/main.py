@@ -37,7 +37,7 @@ app.include_router(chat_router)
 app.include_router(history_router)
 app.include_router(files_router)
 
-@app.get("/")
+@app.get("/api")
 async def root():
     return {
         "name": settings.APP_NAME,
@@ -46,6 +46,26 @@ async def root():
         "description": "Intent-Aligned, Evidence-Grounded AI Assistant",
     }
 
-@app.get("/health")
+@app.get("/api/health")
 async def health():
     return {"status": "healthy"}
+
+# Serve Frontend statically if it exists (for Docker / Production deployment)
+import os
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+frontend_dist = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "dist")
+
+if os.path.exists(frontend_dist):
+    # Serve static files (js, css, assets)
+    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
+    
+    # Catch-all for SPA routing to serve index.html
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        path_to_file = os.path.join(frontend_dist, full_path)
+        if os.path.isfile(path_to_file):
+            return FileResponse(path_to_file)
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
+
